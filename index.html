@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>花束·多宫格拼图（全屏底纹水印）</title>
+    <title>花束·多宫格拼图（多层全屏底纹）</title>
     <style>
         * {
             box-sizing: border-box;
@@ -280,7 +280,7 @@
             line-height: 1.4;
         }
 
-        /* ===== 水印面板样式（精简） ===== */
+        /* ===== 多层水印面板样式 ===== */
         .watermark-panel {
             background: #f0f9ff;
             border-radius: 24px;
@@ -305,47 +305,67 @@
             margin-top: 14px;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
         }
         .watermark-body.hidden {
             display: none;
+        }
+        .wm-layer {
+            background: white;
+            border-radius: 16px;
+            padding: 12px;
+            border: 1px solid #d9eaf7;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .wm-layer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            color: #0c4a6e;
+        }
+        .wm-layer-header .wm-del-btn {
+            background: #fee2e2;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 30px;
+            color: #b91c1c;
+            font-size: 0.7rem;
+            cursor: pointer;
         }
         .wm-row {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
         .wm-row label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
             min-width: 60px;
             color: #0c4a6e;
         }
-        .wm-row .wm-hint {
-            font-size: 0.65rem;
-            color: #64748b;
-            margin-left: 4px;
-        }
         .wm-upload-area {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             flex-wrap: wrap;
         }
         .wm-upload-btn {
             background: #0ea5e9;
             color: white;
             border: none;
-            padding: 6px 16px;
+            padding: 4px 14px;
             border-radius: 40px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             cursor: pointer;
         }
         .wm-thumb {
-            width: 48px;
-            height: 48px;
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
             background: #e2e8f0;
             border: 1px solid #cbd5e1;
             overflow: hidden;
@@ -360,11 +380,36 @@
             height: 100%;
             object-fit: contain;
         }
+        .wm-status-text {
+            font-size: 0.7rem;
+            color: #64748b;
+        }
+        select.wm-select {
+            padding: 4px 10px;
+            border-radius: 40px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-size: 0.7rem;
+        }
+        input[type="range"].wm-slider {
+            width: 100px;
+        }
+        .wm-add-btn {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            align-self: flex-start;
+        }
         .wm-preview-btns {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
-        .wm-preview-btns .btn-sm {
+        .btn-sm {
             padding: 6px 16px;
             border-radius: 40px;
             font-size: 0.75rem;
@@ -380,17 +425,10 @@
             background: #e2e8f0;
             color: #1e293b;
         }
-        .wm-status {
+        .wm-status-global {
             font-size: 0.7rem;
             color: #64748b;
             margin-left: 8px;
-        }
-        select.wm-select {
-            padding: 4px 10px;
-            border-radius: 40px;
-            border: 1px solid #cbd5e1;
-            background: white;
-            font-size: 0.75rem;
         }
         @media (max-width: 650px) {
             .control-bar {
@@ -413,7 +451,7 @@
 <body>
 <div class="container">
     <h1>🌸 花束 · 多宫格拼图</h1>
-    <div class="sub">支持4/6/8/9宫格 · 全局连续编号 · 一键保存 · 全屏底纹水印</div>
+    <div class="sub">支持4/6/8/9宫格 · 全局连续编号 · 一键保存 · 多层全屏底纹</div>
 
     <!-- 控制栏 -->
     <div class="control-bar">
@@ -482,54 +520,25 @@
         <div class="numbers-grid" id="numbersGrid"></div>
     </div>
 
-    <!-- ===== 全屏底纹水印面板（精简） ===== -->
+    <!-- ===== 多层全屏底纹水印面板 ===== -->
     <div class="watermark-panel">
         <div class="watermark-header" id="watermarkToggle">
             <span>🖌️ 全屏底纹水印（点击展开/收起）</span>
             <span style="font-size:0.7rem; color:#64748b;" id="watermarkStatus">未启用</span>
         </div>
         <div class="watermark-body hidden" id="watermarkBody">
-            <!-- 上传水印图 -->
-            <div class="wm-row">
-                <label>底纹图</label>
-                <div class="wm-upload-area">
-                    <button class="wm-upload-btn" id="wmUploadBtn">📁 选择图片</button>
-                    <input type="file" id="wmFileInput" accept="image/*" style="display:none;">
-                    <div class="wm-thumb" id="wmThumb">无</div>
-                    <span class="wm-status" id="wmFileName"></span>
-                </div>
-                <span style="font-size:0.6rem; color:#94a3b8;">任意图片，将拉伸铺满全屏作为底纹</span>
-            </div>
-
-            <!-- 混合模式 -->
-            <div class="wm-row">
-                <label>混合模式</label>
-                <select class="wm-select" id="wmBlendMode">
-                    <option value="source-over">正常（覆盖）</option>
-                    <option value="multiply">正片叠底（变暗）</option>
-                    <option value="screen">滤色（变亮）</option>
-                    <option value="overlay">叠加（增强对比）</option>
-                    <option value="soft-light">柔光（柔和效果）</option>
-                    <option value="color-dodge">颜色减淡（强烈提亮）</option>
-                    <option value="color-burn">颜色加深（强烈变暗）</option>
-                </select>
-            </div>
-
-            <!-- 透明度 -->
-            <div class="wm-row">
-                <label>透明度</label>
-                <input type="range" id="wmOpacitySlider" min="10" max="100" step="1" value="50">
-                <span id="wmOpacityValue" class="num-value">50%</span>
-            </div>
-
-            <!-- 预览/清除 -->
+            <!-- 水印层列表 -->
+            <div id="wmLayersContainer"></div>
+            <!-- 添加层按钮 -->
+            <button class="wm-add-btn" id="wmAddLayerBtn">➕ 添加水印层</button>
+            <!-- 全局预览/清除 -->
             <div class="wm-row">
                 <label>操作</label>
                 <div class="wm-preview-btns">
-                    <button class="btn-sm btn-sm-preview" id="wmPreviewBtn">👁️ 预览底纹</button>
-                    <button class="btn-sm btn-sm-clear" id="wmClearBtn">✕ 清除底纹</button>
+                    <button class="btn-sm btn-sm-preview" id="wmPreviewBtn">👁️ 预览所有层</button>
+                    <button class="btn-sm btn-sm-clear" id="wmClearBtn">✕ 清除预览</button>
                 </div>
-                <span class="wm-status" id="wmHint">点击预览查看效果，保存时自动包含底纹</span>
+                <span class="wm-status-global" id="wmHint">点击预览查看效果，保存时自动包含所有层</span>
             </div>
         </div>
     </div>
@@ -578,11 +587,13 @@
         let fontSizePercent = 14;
         let bottomOffsetPercent = 0;
         
-        // ===== 水印相关变量（全屏拉伸） =====
-        let watermarkImg = null;
+        // ===== 多层水印数据 =====
+        let watermarkLayers = []; // 每个元素 { id, img, blendMode, opacity(0-100 透明度，值越大越透明) }
+        let layerIdCounter = 0;
+        const MAX_LAYERS = 5;
+        
+        // 预览状态
         let watermarkEnabled = false;
-        let wmBlendMode = 'source-over';
-        let wmOpacity = 50;
         
         // DOM 元素
         const multiUpload = document.getElementById('multiImageUpload');
@@ -607,17 +618,12 @@
         // 水印 DOM
         const wmToggle = document.getElementById('watermarkToggle');
         const wmBody = document.getElementById('watermarkBody');
-        const wmUploadBtn = document.getElementById('wmUploadBtn');
-        const wmFileInput = document.getElementById('wmFileInput');
-        const wmThumb = document.getElementById('wmThumb');
-        const wmFileName = document.getElementById('wmFileName');
-        const wmStatus = document.getElementById('watermarkStatus');
-        const wmBlendSelect = document.getElementById('wmBlendMode');
-        const wmOpacitySlider = document.getElementById('wmOpacitySlider');
-        const wmOpacityValue = document.getElementById('wmOpacityValue');
+        const wmLayersContainer = document.getElementById('wmLayersContainer');
+        const wmAddLayerBtn = document.getElementById('wmAddLayerBtn');
         const wmPreviewBtn = document.getElementById('wmPreviewBtn');
         const wmClearBtn = document.getElementById('wmClearBtn');
         const wmHint = document.getElementById('wmHint');
+        const wmStatus = document.getElementById('watermarkStatus');
         
         let numberInputs = [];
         
@@ -779,42 +785,45 @@
             }
         }
         
-        // ===== 绘制全屏底纹（拉伸铺满画布） =====
-        function drawWatermark() {
-            if (!watermarkImg || !watermarkImg.complete || watermarkImg.naturalWidth === 0) return;
+        // ===== 绘制所有水印层（全屏拉伸） =====
+        function drawWatermarks() {
             if (!watermarkEnabled) return;
-            
-            ctx.save();
-            ctx.globalAlpha = wmOpacity / 100;
-            ctx.globalCompositeOperation = wmBlendMode;
-            // 拉伸铺满整个画布
-            ctx.drawImage(watermarkImg, 0, 0, canvasWidth, canvasHeight);
-            ctx.restore();
+            for (let layer of watermarkLayers) {
+                if (!layer.img || !layer.img.complete || layer.img.naturalWidth === 0) continue;
+                ctx.save();
+                // 透明度：值越大越透明，所以 globalAlpha = (100 - layer.opacity) / 100
+                const alpha = (100 - layer.opacity) / 100;
+                ctx.globalAlpha = Math.min(1, Math.max(0, alpha));
+                ctx.globalCompositeOperation = layer.blendMode;
+                ctx.drawImage(layer.img, 0, 0, canvasWidth, canvasHeight);
+                ctx.restore();
+            }
         }
         
         // 完整绘制
         function drawPage() {
             drawCollageBase();
-            if (watermarkEnabled && watermarkImg && watermarkImg.complete && watermarkImg.naturalWidth > 0) {
-                drawWatermark();
+            if (watermarkEnabled) {
+                drawWatermarks();
             }
         }
         
         // 带水印绘制（保存时强制）
         function drawPageWithWatermark() {
             drawCollageBase();
-            if (watermarkImg && watermarkImg.complete && watermarkImg.naturalWidth > 0) {
+            if (watermarkLayers.length > 0 && watermarkLayers.some(l => l.img && l.img.complete && l.img.naturalWidth > 0)) {
                 const savedEnabled = watermarkEnabled;
                 watermarkEnabled = true;
-                drawWatermark();
+                drawWatermarks();
                 watermarkEnabled = savedEnabled;
             }
         }
         
-        // ===== 水印辅助 =====
+        // ===== 水印层管理 =====
         function updateWmStatus() {
-            if (watermarkImg && watermarkImg.complete && watermarkImg.naturalWidth > 0) {
-                wmStatus.textContent = '✅ 底纹已设置';
+            const hasValid = watermarkLayers.some(l => l.img && l.img.complete && l.img.naturalWidth > 0);
+            if (hasValid) {
+                wmStatus.textContent = `✅ ${watermarkLayers.filter(l => l.img && l.img.complete && l.img.naturalWidth > 0).length} 层已设置`;
                 wmStatus.style.color = '#16a34a';
             } else {
                 wmStatus.textContent = '未启用';
@@ -822,36 +831,178 @@
             }
         }
         
-        function updateWmThumb() {
-            if (watermarkImg && watermarkImg.complete && watermarkImg.naturalWidth > 0) {
-                wmThumb.innerHTML = `<img src="${watermarkImg.src}" alt="底纹">`;
-                wmFileName.textContent = watermarkImg.src.split('/').pop().slice(0, 20) || '底纹图';
-            } else {
-                wmThumb.innerHTML = '无';
-                wmFileName.textContent = '';
+        function renderLayers() {
+            wmLayersContainer.innerHTML = '';
+            watermarkLayers.forEach((layer, index) => {
+                const div = document.createElement('div');
+                div.className = 'wm-layer';
+                div.dataset.index = index;
+                
+                // 头部：编号 + 删除按钮
+                const header = document.createElement('div');
+                header.className = 'wm-layer-header';
+                const numSpan = document.createElement('span');
+                numSpan.textContent = `层 #${index + 1}`;
+                const delBtn = document.createElement('button');
+                delBtn.className = 'wm-del-btn';
+                delBtn.textContent = '删除';
+                delBtn.addEventListener('click', () => {
+                    removeLayer(index);
+                });
+                header.appendChild(numSpan);
+                header.appendChild(delBtn);
+                div.appendChild(header);
+                
+                // 上传图片
+                const row1 = document.createElement('div');
+                row1.className = 'wm-row';
+                const label1 = document.createElement('label');
+                label1.textContent = '图片';
+                const uploadArea = document.createElement('div');
+                uploadArea.className = 'wm-upload-area';
+                const uploadBtn = document.createElement('button');
+                uploadBtn.className = 'wm-upload-btn';
+                uploadBtn.textContent = '📁 选择';
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.style.display = 'none';
+                const thumb = document.createElement('div');
+                thumb.className = 'wm-thumb';
+                thumb.textContent = '无';
+                if (layer.img && layer.img.complete && layer.img.naturalWidth > 0) {
+                    thumb.innerHTML = `<img src="${layer.img.src}" alt="层${index+1}">`;
+                }
+                uploadBtn.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (!file.type.startsWith('image/')) {
+                        alert('请选择图片');
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            layer.img = img;
+                            thumb.innerHTML = `<img src="${img.src}" alt="层${index+1}">`;
+                            updateWmStatus();
+                            if (watermarkEnabled) drawPage();
+                        };
+                        img.src = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                    fileInput.value = '';
+                });
+                uploadArea.appendChild(uploadBtn);
+                uploadArea.appendChild(fileInput);
+                uploadArea.appendChild(thumb);
+                row1.appendChild(label1);
+                row1.appendChild(uploadArea);
+                div.appendChild(row1);
+                
+                // 混合模式
+                const row2 = document.createElement('div');
+                row2.className = 'wm-row';
+                const label2 = document.createElement('label');
+                label2.textContent = '混合模式';
+                const select = document.createElement('select');
+                select.className = 'wm-select';
+                const modes = ['source-over', 'multiply', 'screen', 'overlay', 'soft-light', 'color-dodge', 'color-burn'];
+                const modeNames = ['正常', '正片叠底', '滤色', '叠加', '柔光', '颜色减淡', '颜色加深'];
+                modes.forEach((m, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    opt.textContent = modeNames[i];
+                    if (m === layer.blendMode) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                select.addEventListener('change', () => {
+                    layer.blendMode = select.value;
+                    if (watermarkEnabled) drawPage();
+                });
+                row2.appendChild(label2);
+                row2.appendChild(select);
+                div.appendChild(row2);
+                
+                // 透明度
+                const row3 = document.createElement('div');
+                row3.className = 'wm-row';
+                const label3 = document.createElement('label');
+                label3.textContent = '透明度';
+                const slider = document.createElement('input');
+                slider.type = 'range';
+                slider.className = 'wm-slider';
+                slider.min = 0;
+                slider.max = 100;
+                slider.step = 1;
+                slider.value = layer.opacity;
+                const valueSpan = document.createElement('span');
+                valueSpan.className = 'num-value';
+                valueSpan.textContent = layer.opacity + '%';
+                slider.addEventListener('input', () => {
+                    layer.opacity = parseInt(slider.value);
+                    valueSpan.textContent = layer.opacity + '%';
+                    if (watermarkEnabled) drawPage();
+                });
+                row3.appendChild(label3);
+                row3.appendChild(slider);
+                row3.appendChild(valueSpan);
+                div.appendChild(row3);
+                
+                wmLayersContainer.appendChild(div);
+            });
+            updateWmStatus();
+        }
+        
+        function addLayer() {
+            if (watermarkLayers.length >= MAX_LAYERS) {
+                alert(`最多支持 ${MAX_LAYERS} 层水印`);
+                return;
             }
+            watermarkLayers.push({
+                id: layerIdCounter++,
+                img: null,
+                blendMode: 'source-over',
+                opacity: 50  // 透明度50，值越大越透明
+            });
+            renderLayers();
+            if (watermarkEnabled) drawPage();
         }
         
-        function clearWatermarkPreview() {
-            watermarkEnabled = false;
-            wmHint.textContent = '已清除底纹预览';
-            wmHint.style.color = '#ef4444';
-            drawPage();
-            setTimeout(() => {
-                wmHint.textContent = '点击预览查看效果，保存时自动包含底纹';
-                wmHint.style.color = '#64748b';
-            }, 3000);
+        function removeLayer(index) {
+            if (watermarkLayers.length <= 1) {
+                alert('至少保留一层，如需清除请点击“清除预览”');
+                return;
+            }
+            watermarkLayers.splice(index, 1);
+            renderLayers();
+            if (watermarkEnabled) drawPage();
         }
         
-        function previewWatermark() {
-            if (!watermarkImg || !watermarkImg.complete || watermarkImg.naturalWidth === 0) {
-                alert('请先上传底纹图片！');
+        // 预览所有层
+        function previewWatermarks() {
+            const hasValid = watermarkLayers.some(l => l.img && l.img.complete && l.img.naturalWidth > 0);
+            if (!hasValid) {
+                alert('请至少上传一个底纹图片！');
                 return;
             }
             watermarkEnabled = true;
-            wmHint.textContent = '✅ 底纹已预览，保存时将自动包含';
+            wmHint.textContent = '✅ 已预览所有层，保存时将自动包含';
             wmHint.style.color = '#16a34a';
             drawPage();
+        }
+        
+        function clearWatermarks() {
+            watermarkEnabled = false;
+            wmHint.textContent = '已清除预览，保存时不会带底纹';
+            wmHint.style.color = '#ef4444';
+            drawPage();
+            setTimeout(() => {
+                wmHint.textContent = '点击预览查看效果，保存时自动包含所有层';
+                wmHint.style.color = '#64748b';
+            }, 3000);
         }
         
         // ---------- 切换宫格 ----------
@@ -972,7 +1123,7 @@
             }
         }
         
-        // ---------- 保存（带底纹） ----------
+        // ---------- 保存（带所有水印层） ----------
         function saveCurrentPageToFile(pageIndex) {
             drawPageWithWatermark();
             const dataURL = canvas.toDataURL('image/png');
@@ -1012,7 +1163,7 @@
             currentPage = originalPage;
             refreshCurrentPage();
             updatePaginationUI();
-            alert(`已依次保存 ${totalPages} 组图片（含全屏底纹），请查看下载文件夹。`);
+            alert(`已依次保存 ${totalPages} 组图片（含所有底纹层），请查看下载文件夹。`);
         }
         
         // ---------- 构建数字输入网格 ----------
@@ -1204,43 +1355,12 @@
             wmToggle.querySelector('span:first-child').textContent = wmExpanded ? '🖌️ 全屏底纹水印（点击收起）' : '🖌️ 全屏底纹水印（点击展开）';
         });
         
-        wmUploadBtn.addEventListener('click', () => wmFileInput.click());
-        wmFileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            if (!file.type.startsWith('image/')) {
-                alert('请选择图片文件');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const img = new Image();
-                img.onload = () => {
-                    watermarkImg = img;
-                    updateWmThumb();
-                    updateWmStatus();
-                    wmHint.textContent = '✅ 底纹已上传，点击「预览底纹」查看效果';
-                    wmHint.style.color = '#16a34a';
-                };
-                img.src = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-            wmFileInput.value = '';
-        });
+        wmAddLayerBtn.addEventListener('click', addLayer);
+        wmPreviewBtn.addEventListener('click', previewWatermarks);
+        wmClearBtn.addEventListener('click', clearWatermarks);
         
-        wmBlendSelect.addEventListener('change', (e) => {
-            wmBlendMode = e.target.value;
-            if (watermarkEnabled) drawPage();
-        });
-        
-        wmOpacitySlider.addEventListener('input', (e) => {
-            wmOpacity = parseInt(e.target.value);
-            wmOpacityValue.textContent = wmOpacity + '%';
-            if (watermarkEnabled) drawPage();
-        });
-        
-        wmPreviewBtn.addEventListener('click', previewWatermark);
-        wmClearBtn.addEventListener('click', clearWatermarkPreview);
+        // 默认添加一层
+        addLayer();
         
         // ---------- 初始化 ----------
         function init() {
@@ -1252,7 +1372,6 @@
             canvas.style.cursor = 'grab';
             clearAllImages();
             updateWmStatus();
-            updateWmThumb();
         }
         
         init();
