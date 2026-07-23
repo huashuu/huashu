@@ -295,8 +295,8 @@
 </head>
 <body>
 <div class="container">
-    <h1>🌸 花束 · 拼图标号</h1>
-    <div class="sub">支持4/6/8/9宫格，全局连续编号</div>
+    <h1>🌸 花束 · 多宫格拼图</h1>
+    <div class="sub">支持4/6/8/9宫格，全局连续编号，一键保存所有组</div>
 
     <div class="control-bar">
         <div class="ratio-group">
@@ -339,7 +339,7 @@
             📸 从相册选择图片（支持多张，自动分页）
             <input type="file" id="multiImageUpload" accept="image/*" multiple style="display: none;">
         </label>
-        <div class="upload-hint">⭐ 一次可选择多张，程序自动按当前宫格数分页</div>
+        <div class="upload-hint">⭐ 可一次选择几百张，程序自动按当前宫格数分页</div>
     </div>
 
     <div class="pagination" id="paginationBar" style="display: none;">
@@ -379,28 +379,28 @@
         const canvas = document.getElementById('collageCanvas');
         let ctx = canvas.getContext('2d');
         
-        let allImages = [];           // 存储所有图片对象
+        let allImages = [];           // 所有上传的图片对象
         let currentPage = 0;
         let totalPages = 0;
         
-        let currentGridSize = 9;      // 4,6,8,9
+        let currentGridSize = 9;
         let rowsPerGrid = 3;
         let colsPerGrid = 3;
         
-        let slotImages = [];           // 当前页的图片（长度 = currentGridSize）
+        let slotImages = [];
         let slotOffsets = [];
         let slotScale = [];
-        let slotNumbers = [];           // 当前页的数字
+        let slotNumbers = [];
         
-        let globalStart = 1;           // 全局起始编号（用于重新生成）
-        let allNumbers = [];            // 所有图片的编号（一维）
+        let globalStart = 1;
+        let allNumbers = [];
         
         let currentRatio = "1/1";
         let canvasWidth = 3000;
         let canvasHeight = 3000;
         
         let fontSizePercent = 14;
-        let bottomOffsetPercent = 0;    // 默认0，紧贴底部
+        let bottomOffsetPercent = 0;
         
         // DOM 元素
         const multiUpload = document.getElementById('multiImageUpload');
@@ -437,23 +437,22 @@
             }
         }
         
-        // 重新初始化当前页数组（无图片时填充默认数字）
+        // 初始化当前页数组（长度 = currentGridSize）
         function initCurrentPageArrays() {
             slotImages = new Array(currentGridSize).fill(null);
             slotOffsets = new Array(currentGridSize).fill().map(() => ({ offsetX: 0, offsetY: 0 }));
             slotScale = new Array(currentGridSize).fill(1);
             slotNumbers = new Array(currentGridSize);
             for (let i = 0; i < currentGridSize; i++) {
-                slotNumbers[i] = i + 1;   // 默认 1,2,3...
+                slotNumbers[i] = i + 1;
             }
         }
         
-        // 根据全局起始编号重新生成所有图片的编号（一维数组）
+        // 重建所有编号（基于 globalStart）
         function rebuildAllNumbers() {
             if (allImages.length === 0) return;
-            const total = allImages.length;
             allNumbers = [];
-            for (let i = 0; i < total; i++) {
+            for (let i = 0; i < allImages.length; i++) {
                 allNumbers.push(globalStart + i);
             }
             refreshCurrentPageNumbers();
@@ -461,7 +460,7 @@
             drawPage();
         }
         
-        // 刷新当前页的数字（从 allNumbers 中取）
+        // 从 allNumbers 刷新当前页数字
         function refreshCurrentPageNumbers() {
             const startIdx = currentPage * currentGridSize;
             for (let i = 0; i < currentGridSize; i++) {
@@ -469,7 +468,6 @@
                 if (allNumbers.length > 0 && globalIdx < allNumbers.length) {
                     slotNumbers[i] = allNumbers[globalIdx];
                 } else {
-                    // 没有全局编号时（无图片），使用从 globalStart 开始的连续数字
                     slotNumbers[i] = globalStart + globalIdx;
                 }
             }
@@ -481,7 +479,6 @@
             startNumInput.value = slotNumbers[0] || 1;
         }
         
-        // 更新数字输入框显示
         function updateNumbersUI() {
             if (numberInputs.length === 0) return;
             for (let i = 0; i < currentGridSize && i < numberInputs.length; i++) {
@@ -489,20 +486,17 @@
             }
         }
         
-        // 重新计算当前页图片的缩放和偏移（基于当前画布尺寸和格子大小）
+        // 重新计算缩放和偏移
         function recalcScalesAndOffsets() {
             const cellW = canvasWidth / colsPerGrid;
             const cellH = canvasHeight / rowsPerGrid;
             for (let i = 0; i < currentGridSize; i++) {
                 const img = slotImages[i];
                 if (img && img.complete && img.naturalWidth > 0) {
-                    const scaleW = cellW / img.width;
-                    const scaleH = cellH / img.height;
-                    const scale = Math.max(scaleW, scaleH);
+                    const scale = Math.max(cellW / img.width, cellH / img.height);
                     slotScale[i] = scale;
                     const maxOffsetX = Math.max(0, (img.width * scale - cellW) / 2);
                     const maxOffsetY = Math.max(0, (img.height * scale - cellH) / 2);
-                    // 钳位偏移
                     let ox = slotOffsets[i].offsetX;
                     let oy = slotOffsets[i].offsetY;
                     ox = Math.min(maxOffsetX, Math.max(-maxOffsetX, ox));
@@ -517,7 +511,6 @@
         
         // 刷新当前页（加载图片）
         function refreshCurrentPage() {
-            // 清空当前图片数组
             slotImages.fill(null);
             const startIdx = currentPage * currentGridSize;
             for (let i = 0; i < currentGridSize; i++) {
@@ -531,7 +524,7 @@
             drawPage();
         }
         
-        // 绘制画布（包括图片和数字）
+        // 绘制画布
         function drawPage() {
             if (!ctx) return;
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -541,7 +534,6 @@
             const cellW = canvasWidth / colsPerGrid;
             const cellH = canvasHeight / rowsPerGrid;
             
-            // 绘制图片
             for (let i = 0; i < currentGridSize; i++) {
                 const row = Math.floor(i / colsPerGrid);
                 const col = i % colsPerGrid;
@@ -557,13 +549,8 @@
                     let sy = (scaledH - cellH) / 2 - offset.offsetY;
                     sx = Math.max(0, Math.min(sx, scaledW - cellW));
                     sy = Math.max(0, Math.min(sy, scaledH - cellH));
-                    const srcX = sx / scale;
-                    const srcY = sy / scale;
-                    const srcW = cellW / scale;
-                    const srcH = cellH / scale;
-                    ctx.drawImage(img, srcX, srcY, srcW, srcH, dx, dy, cellW, cellH);
+                    ctx.drawImage(img, sx/scale, sy/scale, cellW/scale, cellH/scale, dx, dy, cellW, cellH);
                 } else {
-                    // 无图片时绘制浅色占位符
                     ctx.fillStyle = "#eef2ff";
                     ctx.fillRect(dx, dy, cellW, cellH);
                     ctx.fillStyle = "#94a3b8";
@@ -574,7 +561,6 @@
                 }
             }
             
-            // 绘制数字（贴底）
             for (let i = 0; i < currentGridSize; i++) {
                 const row = Math.floor(i / colsPerGrid);
                 const col = i % colsPerGrid;
@@ -600,7 +586,7 @@
             }
         }
         
-        // 构建数字输入网格（动态创建输入框）
+        // 构建数字输入网格
         function buildNumberGrid() {
             numbersGridDiv.innerHTML = '';
             numberInputs = [];
@@ -629,30 +615,40 @@
         
         // ---------- 核心交互 ----------
         
-        // 切换宫格
+        // 切换宫格（保留图片）
         function switchGridType(newSize) {
+            // 保存当前图片列表（不变）
+            const oldImages = allImages.slice(); // 备份（其实不需要，因为 allImages 不会变）
+            // 更新尺寸
             currentGridSize = newSize;
             updateGridLayout();
-            initCurrentPageArrays();   // 重置图片和数字（默认1..size）
+            // 重置当前页数组（长度变化）
+            initCurrentPageArrays();
             
             if (allImages.length > 0) {
+                // 重新计算总页数
                 totalPages = Math.ceil(allImages.length / currentGridSize);
                 if (totalPages === 0) totalPages = 1;
-                currentPage = Math.min(currentPage, totalPages-1);
+                // 调整当前页码，不能超出
+                if (currentPage >= totalPages) currentPage = totalPages - 1;
                 if (currentPage < 0) currentPage = 0;
-                rebuildAllNumbers();    // 根据全局起始重建编号
-                refreshCurrentPage();   // 加载图片
+                // 重新生成编号（基于 globalStart）
+                rebuildAllNumbers();
+                // 刷新当前页（加载图片）
+                refreshCurrentPage();
             } else {
-                // 无图片时，直接使用默认数字并重绘
-                refreshCurrentPageNumbers(); // 会基于 globalStart 填充
+                // 无图片，只刷新数字显示（从 globalStart 开始）
+                refreshCurrentPageNumbers();
                 drawPage();
             }
-            buildNumberGrid();          // 重建输入框
+            // 重建数字输入框
+            buildNumberGrid();
+            // 更新分页UI
             updatePaginationUI();
             paginationBar.style.display = (allImages.length > 0 && totalPages > 1) ? 'flex' : 'none';
         }
         
-        // 上传图片（支持多张）
+        // 上传图片
         function handleMultipleImages(files) {
             const fileArray = Array.from(files);
             if (fileArray.length === 0) return;
@@ -693,13 +689,13 @@
             allNumbers = [];
             totalPages = 1;
             currentPage = 0;
-            initCurrentPageArrays();    // 重置数组，数字为 1..size
+            initCurrentPageArrays();
             drawPage();
             paginationBar.style.display = 'none';
             buildNumberGrid();
         }
         
-        // 重新生成所有编号（基于起始数输入框的值）
+        // 重新生成所有编号
         function regenerateAllNumbers() {
             let start = parseInt(startNumInput.value, 10);
             if (isNaN(start)) start = 1;
@@ -708,14 +704,13 @@
                 rebuildAllNumbers();
                 refreshCurrentPage();
             } else {
-                // 无图片时只刷新当前页的数字预览
                 refreshCurrentPageNumbers();
                 updateNumbersUI();
                 drawPage();
             }
         }
         
-        // 重置当前页图片位置（归零）
+        // 重置偏移
         function resetOffsetsCurrentPage() {
             for (let i = 0; i < currentGridSize; i++) {
                 if (slotImages[i]) {
@@ -726,7 +721,7 @@
             drawPage();
         }
         
-        // 分页相关
+        // 分页UI
         function updatePaginationUI() {
             pageInfoSpan.innerText = `第 ${currentPage+1} / ${totalPages} 组`;
             prevPageBtn.disabled = (currentPage === 0);
@@ -785,7 +780,7 @@
             alert(`已依次保存 ${totalPages} 组图片，请查看下载文件夹。`);
         }
         
-        // ---------- 拖拽移动图片 ----------
+        // ---------- 拖拽 ----------
         let dragActive = false;
         let dragStartX = 0, dragStartY = 0;
         let dragSlotIndex = -1;
@@ -838,10 +833,8 @@
             const cellW = canvasWidth / colsPerGrid;
             const cellH = canvasHeight / rowsPerGrid;
             const scale = slotScale[dragSlotIndex];
-            const scaledW = img.width * scale;
-            const scaledH = img.height * scale;
-            const maxOffsetX = Math.max(0, (scaledW - cellW) / 2);
-            const maxOffsetY = Math.max(0, (scaledH - cellH) / 2);
+            const maxOffsetX = Math.max(0, (img.width * scale - cellW) / 2);
+            const maxOffsetY = Math.max(0, (img.height * scale - cellH) / 2);
             let newX = dragStartOffset.offsetX + deltaX;
             let newY = dragStartOffset.offsetY + deltaY;
             newX = Math.min(maxOffsetX, Math.max(-maxOffsetX, newX));
@@ -863,7 +856,7 @@
         window.addEventListener('touchmove', onPointerMove, { passive: false });
         window.addEventListener('touchend', onPointerUp);
         
-        // ---------- 其他UI事件 ----------
+        // ---------- UI事件绑定 ----------
         fontSizeSlider.addEventListener('input', (e) => {
             fontSizePercent = parseInt(e.target.value);
             fontSizeValue.innerText = fontSizePercent;
@@ -921,7 +914,7 @@
             });
         }
         
-        // 绑定事件
+        // 监听宫格切换
         gridTypeSelect.addEventListener('change', (e) => {
             const newSize = parseInt(e.target.value, 10);
             switchGridType(newSize);
@@ -949,7 +942,7 @@
             initRatioButtons();
             updateCanvasSizeByRatio();
             canvas.style.cursor = 'grab';
-            clearAllImages();  // 确保初始状态干净
+            clearAllImages();
         }
         
         init();
