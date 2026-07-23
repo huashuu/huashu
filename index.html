@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>花束·多宫格拼图（带水印）</title>
+    <title>花束·多宫格拼图（全屏底纹水印）</title>
     <style>
         * {
             box-sizing: border-box;
@@ -280,7 +280,7 @@
             line-height: 1.4;
         }
 
-        /* ===== 水印面板样式（新增） ===== */
+        /* ===== 水印面板样式（精简） ===== */
         .watermark-panel {
             background: #f0f9ff;
             border-radius: 24px;
@@ -360,24 +360,6 @@
             height: 100%;
             object-fit: contain;
         }
-        .wm-pos-btns {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-        .wm-pos-btn {
-            background: #eef2ff;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 30px;
-            font-size: 0.65rem;
-            cursor: pointer;
-            color: #1e293b;
-        }
-        .wm-pos-btn.active {
-            background: #3b82f6;
-            color: white;
-        }
         .wm-preview-btns {
             display: flex;
             gap: 8px;
@@ -431,7 +413,7 @@
 <body>
 <div class="container">
     <h1>🌸 花束 · 多宫格拼图</h1>
-    <div class="sub">支持4/6/8/9宫格 · 全局连续编号 · 一键保存 · 水印防盗</div>
+    <div class="sub">支持4/6/8/9宫格 · 全局连续编号 · 一键保存 · 全屏底纹水印</div>
 
     <!-- 控制栏 -->
     <div class="control-bar">
@@ -500,23 +482,23 @@
         <div class="numbers-grid" id="numbersGrid"></div>
     </div>
 
-    <!-- ===== 水印设置面板（新增） ===== -->
+    <!-- ===== 全屏底纹水印面板（精简） ===== -->
     <div class="watermark-panel">
         <div class="watermark-header" id="watermarkToggle">
-            <span>🖌️ 水印设置（点击展开/收起）</span>
+            <span>🖌️ 全屏底纹水印（点击展开/收起）</span>
             <span style="font-size:0.7rem; color:#64748b;" id="watermarkStatus">未启用</span>
         </div>
         <div class="watermark-body hidden" id="watermarkBody">
             <!-- 上传水印图 -->
             <div class="wm-row">
-                <label>水印图</label>
+                <label>底纹图</label>
                 <div class="wm-upload-area">
                     <button class="wm-upload-btn" id="wmUploadBtn">📁 选择图片</button>
                     <input type="file" id="wmFileInput" accept="image/*" style="display:none;">
                     <div class="wm-thumb" id="wmThumb">无</div>
                     <span class="wm-status" id="wmFileName"></span>
                 </div>
-                <span style="font-size:0.6rem; color:#94a3b8;">推荐透明背景 PNG</span>
+                <span style="font-size:0.6rem; color:#94a3b8;">任意图片，将拉伸铺满全屏作为底纹</span>
             </div>
 
             <!-- 混合模式 -->
@@ -524,8 +506,8 @@
                 <label>混合模式</label>
                 <select class="wm-select" id="wmBlendMode">
                     <option value="source-over">正常（覆盖）</option>
-                    <option value="multiply">正片叠底（变暗 · 适合浅色水印）</option>
-                    <option value="screen">滤色（变亮 · 适合深色水印）</option>
+                    <option value="multiply">正片叠底（变暗）</option>
+                    <option value="screen">滤色（变亮）</option>
                     <option value="overlay">叠加（增强对比）</option>
                     <option value="soft-light">柔光（柔和效果）</option>
                     <option value="color-dodge">颜色减淡（强烈提亮）</option>
@@ -533,28 +515,9 @@
                 </select>
             </div>
 
-            <!-- 位置 -->
+            <!-- 透明度 -->
             <div class="wm-row">
-                <label>位置</label>
-                <div class="wm-pos-btns" id="wmPosBtns">
-                    <button data-pos="left-top" class="wm-pos-btn">↖</button>
-                    <button data-pos="top" class="wm-pos-btn">↑</button>
-                    <button data-pos="right-top" class="wm-pos-btn">↗</button>
-                    <button data-pos="left" class="wm-pos-btn">←</button>
-                    <button data-pos="center" class="wm-pos-btn active">⊙</button>
-                    <button data-pos="right" class="wm-pos-btn">→</button>
-                    <button data-pos="left-bottom" class="wm-pos-btn">↙</button>
-                    <button data-pos="bottom" class="wm-pos-btn">↓</button>
-                    <button data-pos="right-bottom" class="wm-pos-btn">↘</button>
-                </div>
-            </div>
-
-            <!-- 大小 & 透明度 -->
-            <div class="wm-row">
-                <label>大小</label>
-                <input type="range" id="wmSizeSlider" min="10" max="50" step="1" value="20">
-                <span id="wmSizeValue" class="num-value">20%</span>
-                <label style="margin-left:12px;">透明度</label>
+                <label>透明度</label>
                 <input type="range" id="wmOpacitySlider" min="10" max="100" step="1" value="50">
                 <span id="wmOpacityValue" class="num-value">50%</span>
             </div>
@@ -563,14 +526,14 @@
             <div class="wm-row">
                 <label>操作</label>
                 <div class="wm-preview-btns">
-                    <button class="btn-sm btn-sm-preview" id="wmPreviewBtn">👁️ 预览水印</button>
-                    <button class="btn-sm btn-sm-clear" id="wmClearBtn">✕ 清除水印</button>
+                    <button class="btn-sm btn-sm-preview" id="wmPreviewBtn">👁️ 预览底纹</button>
+                    <button class="btn-sm btn-sm-clear" id="wmClearBtn">✕ 清除底纹</button>
                 </div>
-                <span class="wm-status" id="wmHint">点击预览查看效果，保存时自动包含水印</span>
+                <span class="wm-status" id="wmHint">点击预览查看效果，保存时自动包含底纹</span>
             </div>
         </div>
     </div>
-    <!-- ===== 水印设置结束 ===== -->
+    <!-- ===== 水印结束 ===== -->
 
     <!-- 操作按钮 -->
     <div class="action-buttons">
@@ -615,13 +578,11 @@
         let fontSizePercent = 14;
         let bottomOffsetPercent = 0;
         
-        // ===== 水印相关变量（新增） =====
-        let watermarkImg = null;          // 水印图片对象
-        let watermarkEnabled = false;      // 是否启用水印（预览状态）
-        let wmBlendMode = 'source-over';   // 混合模式
-        let wmPosition = 'center';         // 位置
-        let wmSizePercent = 20;            // 大小百分比
-        let wmOpacity = 50;                // 透明度 0-100
+        // ===== 水印相关变量（全屏拉伸） =====
+        let watermarkImg = null;
+        let watermarkEnabled = false;
+        let wmBlendMode = 'source-over';
+        let wmOpacity = 50;
         
         // DOM 元素
         const multiUpload = document.getElementById('multiImageUpload');
@@ -643,7 +604,7 @@
         const pageInfoSpan = document.getElementById('pageInfo');
         const gridTypeSelect = document.getElementById('gridTypeSelect');
         
-        // ===== 水印 DOM（新增） =====
+        // 水印 DOM
         const wmToggle = document.getElementById('watermarkToggle');
         const wmBody = document.getElementById('watermarkBody');
         const wmUploadBtn = document.getElementById('wmUploadBtn');
@@ -652,9 +613,6 @@
         const wmFileName = document.getElementById('wmFileName');
         const wmStatus = document.getElementById('watermarkStatus');
         const wmBlendSelect = document.getElementById('wmBlendMode');
-        const wmPosBtns = document.getElementById('wmPosBtns');
-        const wmSizeSlider = document.getElementById('wmSizeSlider');
-        const wmSizeValue = document.getElementById('wmSizeValue');
         const wmOpacitySlider = document.getElementById('wmOpacitySlider');
         const wmOpacityValue = document.getElementById('wmOpacityValue');
         const wmPreviewBtn = document.getElementById('wmPreviewBtn');
@@ -758,8 +716,7 @@
             drawPage();
         }
         
-        // ===== 核心绘制函数（包含水印绘制） =====
-        // 绘制拼图基础层（不含水印）
+        // 绘制拼图基础层
         function drawCollageBase() {
             if (!ctx) return;
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -796,7 +753,7 @@
                 }
             }
             
-            // 绘制数字
+            // 数字
             for (let i = 0; i < currentGridSize; i++) {
                 const row = Math.floor(i / colsPerGrid);
                 const col = i % colsPerGrid;
@@ -822,36 +779,20 @@
             }
         }
         
-        // ===== 绘制水印（新增） =====
+        // ===== 绘制全屏底纹（拉伸铺满画布） =====
         function drawWatermark() {
             if (!watermarkImg || !watermarkImg.complete || watermarkImg.naturalWidth === 0) return;
             if (!watermarkEnabled) return;
             
-            const wmSize = canvasWidth * wmSizePercent / 100;
-            const margin = 20;
-            let x, y;
-            
-            // 计算位置
-            const pos = wmPosition;
-            if (pos === 'left-top') { x = margin; y = margin; }
-            else if (pos === 'top') { x = (canvasWidth - wmSize) / 2; y = margin; }
-            else if (pos === 'right-top') { x = canvasWidth - wmSize - margin; y = margin; }
-            else if (pos === 'left') { x = margin; y = (canvasHeight - wmSize) / 2; }
-            else if (pos === 'center') { x = (canvasWidth - wmSize) / 2; y = (canvasHeight - wmSize) / 2; }
-            else if (pos === 'right') { x = canvasWidth - wmSize - margin; y = (canvasHeight - wmSize) / 2; }
-            else if (pos === 'left-bottom') { x = margin; y = canvasHeight - wmSize - margin; }
-            else if (pos === 'bottom') { x = (canvasWidth - wmSize) / 2; y = canvasHeight - wmSize - margin; }
-            else if (pos === 'right-bottom') { x = canvasWidth - wmSize - margin; y = canvasHeight - wmSize - margin; }
-            else { x = (canvasWidth - wmSize) / 2; y = (canvasHeight - wmSize) / 2; }
-            
             ctx.save();
             ctx.globalAlpha = wmOpacity / 100;
             ctx.globalCompositeOperation = wmBlendMode;
-            ctx.drawImage(watermarkImg, x, y, wmSize, wmSize);
+            // 拉伸铺满整个画布
+            ctx.drawImage(watermarkImg, 0, 0, canvasWidth, canvasHeight);
             ctx.restore();
         }
         
-        // 完整绘制（拼图 + 水印）
+        // 完整绘制
         function drawPage() {
             drawCollageBase();
             if (watermarkEnabled && watermarkImg && watermarkImg.complete && watermarkImg.naturalWidth > 0) {
@@ -859,11 +800,10 @@
             }
         }
         
-        // ===== 带水印的绘制（用于保存时强制带水印） =====
+        // 带水印绘制（保存时强制）
         function drawPageWithWatermark() {
             drawCollageBase();
             if (watermarkImg && watermarkImg.complete && watermarkImg.naturalWidth > 0) {
-                // 保存时强制绘制水印，不管预览状态
                 const savedEnabled = watermarkEnabled;
                 watermarkEnabled = true;
                 drawWatermark();
@@ -871,10 +811,10 @@
             }
         }
         
-        // ===== 水印辅助函数 =====
+        // ===== 水印辅助 =====
         function updateWmStatus() {
             if (watermarkImg && watermarkImg.complete && watermarkImg.naturalWidth > 0) {
-                wmStatus.textContent = '✅ 水印已设置';
+                wmStatus.textContent = '✅ 底纹已设置';
                 wmStatus.style.color = '#16a34a';
             } else {
                 wmStatus.textContent = '未启用';
@@ -884,34 +824,32 @@
         
         function updateWmThumb() {
             if (watermarkImg && watermarkImg.complete && watermarkImg.naturalWidth > 0) {
-                wmThumb.innerHTML = `<img src="${watermarkImg.src}" alt="水印">`;
-                wmFileName.textContent = watermarkImg.src.split('/').pop().slice(0, 20) || '水印图';
+                wmThumb.innerHTML = `<img src="${watermarkImg.src}" alt="底纹">`;
+                wmFileName.textContent = watermarkImg.src.split('/').pop().slice(0, 20) || '底纹图';
             } else {
                 wmThumb.innerHTML = '无';
                 wmFileName.textContent = '';
             }
         }
         
-        // 清除水印（不删除图片，只关闭预览）
         function clearWatermarkPreview() {
             watermarkEnabled = false;
-            wmHint.textContent = '已清除预览，保存时不会带水印';
+            wmHint.textContent = '已清除底纹预览';
             wmHint.style.color = '#ef4444';
             drawPage();
             setTimeout(() => {
-                wmHint.textContent = '点击预览查看效果，保存时自动包含水印';
+                wmHint.textContent = '点击预览查看效果，保存时自动包含底纹';
                 wmHint.style.color = '#64748b';
             }, 3000);
         }
         
-        // 预览水印
         function previewWatermark() {
             if (!watermarkImg || !watermarkImg.complete || watermarkImg.naturalWidth === 0) {
-                alert('请先上传水印图片！');
+                alert('请先上传底纹图片！');
                 return;
             }
             watermarkEnabled = true;
-            wmHint.textContent = '✅ 水印已预览，保存时将自动包含';
+            wmHint.textContent = '✅ 底纹已预览，保存时将自动包含';
             wmHint.style.color = '#16a34a';
             drawPage();
         }
@@ -1034,16 +972,15 @@
             }
         }
         
-        // ---------- 保存（带水印） ----------
+        // ---------- 保存（带底纹） ----------
         function saveCurrentPageToFile(pageIndex) {
-            // 保存时强制带水印（如果有水印图）
             drawPageWithWatermark();
             const dataURL = canvas.toDataURL('image/png');
             const link = document.createElement('a');
             link.download = `collage_${currentGridSize}grid_group_${String(pageIndex+1).padStart(2,'0')}.png`;
             link.href = dataURL;
             link.click();
-            // 恢复显示状态（如果有水印预览则恢复，否则不显示水印）
+            // 恢复显示状态
             if (watermarkEnabled) {
                 drawPage();
             } else {
@@ -1075,7 +1012,7 @@
             currentPage = originalPage;
             refreshCurrentPage();
             updatePaginationUI();
-            alert(`已依次保存 ${totalPages} 组图片（含水印），请查看下载文件夹。`);
+            alert(`已依次保存 ${totalPages} 组图片（含全屏底纹），请查看下载文件夹。`);
         }
         
         // ---------- 构建数字输入网格 ----------
@@ -1259,16 +1196,14 @@
         saveBtn.addEventListener('click', saveCurrentGroup);
         saveAllBtn.addEventListener('click', saveAllGroups);
         
-        // ===== 水印事件绑定（新增） =====
-        // 折叠面板
+        // ===== 水印事件绑定 =====
         let wmExpanded = false;
         wmToggle.addEventListener('click', () => {
             wmExpanded = !wmExpanded;
             wmBody.classList.toggle('hidden', !wmExpanded);
-            wmToggle.querySelector('span:first-child').textContent = wmExpanded ? '🖌️ 水印设置（点击收起）' : '🖌️ 水印设置（点击展开）';
+            wmToggle.querySelector('span:first-child').textContent = wmExpanded ? '🖌️ 全屏底纹水印（点击收起）' : '🖌️ 全屏底纹水印（点击展开）';
         });
         
-        // 上传水印图
         wmUploadBtn.addEventListener('click', () => wmFileInput.click());
         wmFileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -1284,10 +1219,8 @@
                     watermarkImg = img;
                     updateWmThumb();
                     updateWmStatus();
-                    wmHint.textContent = '✅ 水印已上传，点击「预览水印」查看效果';
+                    wmHint.textContent = '✅ 底纹已上传，点击「预览底纹」查看效果';
                     wmHint.style.color = '#16a34a';
-                    // 自动预览（可选）
-                    // previewWatermark();
                 };
                 img.src = ev.target.result;
             };
@@ -1295,40 +1228,18 @@
             wmFileInput.value = '';
         });
         
-        // 混合模式
         wmBlendSelect.addEventListener('change', (e) => {
             wmBlendMode = e.target.value;
             if (watermarkEnabled) drawPage();
         });
         
-        // 位置按钮
-        wmPosBtns.querySelectorAll('.wm-pos-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                wmPosBtns.querySelectorAll('.wm-pos-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                wmPosition = btn.dataset.pos;
-                if (watermarkEnabled) drawPage();
-            });
-        });
-        
-        // 大小滑块
-        wmSizeSlider.addEventListener('input', (e) => {
-            wmSizePercent = parseInt(e.target.value);
-            wmSizeValue.textContent = wmSizePercent + '%';
-            if (watermarkEnabled) drawPage();
-        });
-        
-        // 透明度滑块
         wmOpacitySlider.addEventListener('input', (e) => {
             wmOpacity = parseInt(e.target.value);
             wmOpacityValue.textContent = wmOpacity + '%';
             if (watermarkEnabled) drawPage();
         });
         
-        // 预览水印
         wmPreviewBtn.addEventListener('click', previewWatermark);
-        
-        // 清除水印
         wmClearBtn.addEventListener('click', clearWatermarkPreview);
         
         // ---------- 初始化 ----------
